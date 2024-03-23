@@ -1,0 +1,11 @@
+.form-container{
+    display: flex;
+    flex-direction: column;
+}
+.error-message{
+    color: red;
+
+}
+.login-input{
+    padding: 5px;
+}
