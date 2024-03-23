@@ -23,6 +23,7 @@ const schema = yup.object().shape({
 
 const LoginForm = () => {
   const [adata, setaData] = useState();
+  const [isMobileLogin, setMobileLogin] = useState<boolean>(false);
   const {
     register,
     handleSubmit,
@@ -35,36 +36,50 @@ const LoginForm = () => {
   };
   console.log("erors.............", errors);
   console.log("data............", adata);
-
+  const handleLoginMethod = () => {
+    setMobileLogin(!isMobileLogin);
+  };
   return (
     <>
-      <h2>Login Form</h2>
+      <h2>Login</h2>
+      <button className="py-2 br-10" onClick={() => handleLoginMethod()}>
+        Login with {isMobileLogin ? "Mobile" : "Email"}
+      </button>
       <form className="form-container" onSubmit={handleSubmit(onSubmit)}>
-        <label htmlFor="email">Email</label>
-        <input
-          className="login-input"
-          type="text"
-          placeholder="Email"
-          {...register("email", { required: true, pattern: /^\S+@\S+$/i })}
-        />
-        {errors.email && (
-          <span className="error-message">{errors.email.message}</span>
-        )}
-        <label htmlFor="mobileNumber">Mobile number</label>
+        {isMobileLogin ? (
+          <>
+            <label htmlFor="email">Email</label>
+            <input
+              className="login-input"
+              type="text"
+              placeholder="Email"
+              {...register("email", { required: true, pattern: /^\S+@\S+$/i })}
+            />
+            {errors.email && (
+              <span className="error-message">{errors.email.message}</span>
+            )}
+          </>
+        ) : (
+          <>
+            <label htmlFor="mobileNumber">Mobile number</label>
 
-        <input
-          className="login-input"
-          type="nu"
-          placeholder="Mobile number"
-          {...register("mobileNumber", {
-            required: true,
-            max: 10,
-            min: 10,
-            maxLength: 10,
-          })}
-        />
-        {errors.mobileNumber && (
-          <span className="error-message">{errors.mobileNumber.message}</span>
+            <input
+              className="login-input"
+              type="nu"
+              placeholder="Mobile number"
+              {...register("mobileNumber", {
+                required: true,
+                max: 10,
+                min: 10,
+                maxLength: 10,
+              })}
+            />
+            {errors.mobileNumber && (
+              <span className="error-message">
+                {errors.mobileNumber.message}
+              </span>
+            )}
+          </>
         )}
         <label htmlFor="password">Password</label>
 
