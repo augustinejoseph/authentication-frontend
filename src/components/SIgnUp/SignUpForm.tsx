@@ -3,6 +3,10 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import "../Login/Form.css";
+import httpClient from "../../constants/httpClient";
+import toast from "react-hot-toast";
+import axios from "axios";
+import { BASE_URL } from "../../constants/urls";
 
 const schema = yup.object().shape({
   email: yup
@@ -13,32 +17,38 @@ const schema = yup.object().shape({
     .string()
     .required("Password is required")
     .min(8, "Password must be atleast 8 characters"),
-  mobileNumber: yup
+  phone_number: yup
     .string()
     .required("Mobile number is required")
-    .matches(/^[6-9][0-9]{10}/, "Invalid phone number")
-    .max(10, "Phone number should be 10 digits")
-    .min(10, "Atleast 10 digits is required"),
+    .max(10, "Mobile number should be 10 digits")
+    .min(10, "10 digits is required"),
 });
 
 const SignUpForm = () => {
-  const [adata, setaData] = useState();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({ resolver: yupResolver(schema) });
 
-  const onSubmit = (data: any) => {
-    // console.log('data............',data);
-    setaData(data);
+  const onSubmit = async (data: any) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/api/user/`, data);
+
+      if (response.data.status === 400 || response.data.status === 404) {
+        toast.error(response?.data?.error || "Error: Bad Request");
+      } else if (response.data?.status === 201) {
+        toast.success(response?.data?.message || "User created successfully");
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      toast.error("An error occurred while creating the user");
+    }
   };
-  console.log("erors.............", errors);
-  console.log("data............", adata);
 
   return (
     <>
-      <h2>SignUp Form</h2>
+      <h2>SignUp</h2>
       <form className="form-container" onSubmit={handleSubmit(onSubmit)}>
         <label htmlFor="email">Email</label>
         <input
@@ -56,15 +66,15 @@ const SignUpForm = () => {
           className="login-input"
           type="nu"
           placeholder="Mobile number"
-          {...register("mobileNumber", {
+          {...register("phone_number", {
             required: true,
             max: 10,
             min: 10,
             maxLength: 10,
           })}
         />
-        {errors.mobileNumber && (
-          <span className="error-message">{errors.mobileNumber.message}</span>
+        {errors.phone_number && (
+          <span className="error-message">{errors.phone_number.message}</span>
         )}
         <label htmlFor="password">Password</label>
 
@@ -81,7 +91,6 @@ const SignUpForm = () => {
           Submit
         </button>
       </form>
-      <p>{adata}</p>
     </>
   );
 };

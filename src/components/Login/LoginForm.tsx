@@ -3,39 +3,63 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import "./Form.css";
+import axios from "axios";
+import { BASE_URL } from "../../constants/urls";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+import { HOME_PAGE } from "../../routes/Router";
 
 const schema = yup.object().shape({
   email: yup
     .string()
-    .required("Email is required")
+    // .required("Email is required")
     .email("Invalid email format"),
   password: yup
     .string()
     .required("Password is required")
     .min(8, "Password must be atleast 8 characters"),
-  mobileNumber: yup
+  mobile: yup
     .string()
-    .required("Mobile number is required")
+    // .required("Mobile number is required")
     // .matches(/^[6-9][0-9]{10}/, "Invalid phone number")
-    .max(10, "Phone number should be 10 digits")
-    .min(10, "Atleast 10 digits is required"),
+    // .max(10, "Phone number should be 10 digits")
+    // .min(10, "Atleast 10 digits is required"),
 });
 
 const LoginForm = () => {
-  const [adata, setaData] = useState();
   const [isMobileLogin, setMobileLogin] = useState<boolean>(false);
+  const navigate = useNavigate()
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({ resolver: yupResolver(schema) });
 
-  const onSubmit = (data: any) => {
-    // console.log('data............',data);
-    setaData(data);
+  const onSubmit = async (data: any) => {
+    // setaData(data);
+    console.log("data>>>>>>>>>>", data);
+    try {
+      const response = await axios.post(`${BASE_URL}/api/user/login/`, data);
+      console.log(response);
+      if (response.data.status === 400 || response.data.status === 404) {
+        toast.error(response?.data?.error || "Error: Bad Request");
+      } else if (response.data?.status === 201) {
+        toast.success(response?.data?.message || "User created successfully");
+      }
+      if(response?.data?.status === 200){
+        localStorage.clear()
+        localStorage.setItem('token', response?.data?.token)
+        localStorage.setItem('refresh', response?.data?.refresh)
+        localStorage.setItem('user_info', response?.data?.user_info)
+        toast.success(response?.data?.message || "Login Successful")
+        navigate(HOME_PAGE)
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      toast.error("An error occurred while logging in");
+    }
   };
-  console.log("erors.............", errors);
-  console.log("data............", adata);
+
   const handleLoginMethod = () => {
     setMobileLogin(!isMobileLogin);
   };
@@ -53,10 +77,13 @@ const LoginForm = () => {
               className="login-input"
               type="text"
               placeholder="Email"
-              {...register("email", { required: true, pattern: /^\S+@\S+$/i })}
+              {...register("email", { pattern: /^\S+@\S+$/i })}
             />
             {errors.email && (
               <span className="error-message">{errors.email.message}</span>
+            )}
+             {errors.mobile && (
+              <span className="error-message">{errors.mobile.message}</span>
             )}
           </>
         ) : (
@@ -67,17 +94,18 @@ const LoginForm = () => {
               className="login-input"
               type="nu"
               placeholder="Mobile number"
-              {...register("mobileNumber", {
-                required: true,
+              {...register("mobile", {
+                required: false,
                 max: 10,
                 min: 10,
                 maxLength: 10,
               })}
             />
-            {errors.mobileNumber && (
-              <span className="error-message">
-                {errors.mobileNumber.message}
-              </span>
+            {errors.mobile && (
+              <span className="error-message">{errors.mobile.message}</span>
+            )}
+            {errors.email && (
+              <span className="error-message">{errors.email.message}</span>
             )}
           </>
         )}
@@ -96,7 +124,6 @@ const LoginForm = () => {
           Submit
         </button>
       </form>
-      <p>{adata}</p>
     </>
   );
 };

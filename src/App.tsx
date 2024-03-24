@@ -1,19 +1,26 @@
-import { useState } from "react";
 import "./App.css";
 import LoginForm from "./components/Login/LoginForm";
+import { Toaster } from "react-hot-toast";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { HOME_PAGE, LOGIN, SIGN_UP } from "./routes/Router";
+import { useEffect } from "react";
+import Home from "./components/HomePage/Home";
 import SignUpForm from "./components/SIgnUp/SignUpForm";
 
 function App() {
-  const [toggleForms, setToggleForms] = useState<boolean>(false);
-  const handleFormToggle = () => {
-    setToggleForms(!toggleForms);
-  };
+  useEffect(( ) => {
+    const token = localStorage.getItem('token') || {}
+  },[])
   return (
     <>
-      {toggleForms ? <LoginForm /> : <SignUpForm />}
-      <button onClick={() => handleFormToggle()} className="">
-        {toggleForms ? "SignUp" : "Login"}
-      </button>
+      <Toaster position="top-right" reverseOrder={false} />
+      <Router>
+        <Routes>
+          <Route path={HOME_PAGE} element={<Home />} />
+          <Route path={LOGIN} element={<LoginForm />} />
+          <Route path={SIGN_UP} element={<SignUpForm/>} />
+        </Routes>
+      </Router>
     </>
   );
 }
